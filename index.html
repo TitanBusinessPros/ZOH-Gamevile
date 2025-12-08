@@ -843,6 +843,17 @@
                 });
             });
         }
+        
+        function loadImageIfNeeded(key) {
+    if (!SPRITES[key]) return;
+
+    if (!IMG[key]) {
+        const img = new Image();
+        img.src = SPRITES[key];
+        IMG[key] = img;
+    }
+}
+
 
         let gameState = {
             stage: 1,
@@ -2139,23 +2150,31 @@
             }
             ctx.fillRect(0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT);
             
-            // Draw buildings
-            for (let i = 0; i < buildings.length; i++) {
-                const b = buildings[i];
-                const buildingImg = IMG['building' + b.id];
-                if (buildingImg && buildingImg.complete && buildingImg.naturalWidth > 0 && SPRITES['building' + b.id]) {
-                    ctx.drawImage(buildingImg, b.x, b.y, b.width, b.height);
-                } else {
-                    ctx.fillStyle = '#555577';
-                    ctx.fillRect(b.x, b.y, b.width, b.height);
-                    ctx.strokeStyle = '#333';
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(b.x, b.y, b.width, b.height);
-                }
-            }
+            // Draw buildings (LAZY LOADED)
+for (let i = 0; i < buildings.length; i++) {
+    const b = buildings[i];
+    const key = 'building' + b.id;
+
+    // ✅ LAZY LOAD TRIGGER
+    loadImageIfNeeded(key);
+
+    const buildingImg = IMG[key];
+
+    if (buildingImg && buildingImg.complete && buildingImg.naturalWidth > 0 && SPRITES[key]) {
+        ctx.drawImage(buildingImg, b.x, b.y, b.width, b.height);
+    } else {
+        ctx.fillStyle = '#555577';
+        ctx.fillRect(b.x, b.y, b.width, b.height);
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(b.x, b.y, b.width, b.height);
+    }
+}
+
             
             // Ammo
             for (const a of ammoPacks) {
+               loadImageIfNeeded('ammo');
                 if (IMG.ammo && IMG.ammo.complete && IMG.ammo.naturalWidth > 0 && SPRITES.ammo) {
                     ctx.drawImage(IMG.ammo, a.x - 15, a.y - 15, 30, 30);
                 } else {
@@ -2194,6 +2213,8 @@
             
             // Zombies
             for (const z of zombies) {
+                // Add this line before drawing the zombie
+                loadImageIfNeeded('zombie' + z.type);
                 const zi = IMG['zombie' + z.type];
                 
                 // Make ghost zombies (8 & 9) semi-transparent
