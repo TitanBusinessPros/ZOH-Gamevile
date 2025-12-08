@@ -266,8 +266,8 @@
             position: absolute;
             bottom: 20px;
             left: 20px;
-            width: 150px;
-            height: 150px;
+            width: 180px;
+            height: 180px;
             background: rgba(100, 100, 100, 0.3);
             border: 3px solid rgba(255, 255, 255, 0.4);
             border-radius: 50%;
@@ -276,8 +276,8 @@
         
         #joystick-stick {
             position: absolute;
-            width: 60px;
-            height: 60px;
+            width: 80px;
+            height: 80px;
             background: rgba(255, 255, 255, 0.6);
             border: 3px solid rgba(255, 255, 255, 0.8);
             border-radius: 50%;
@@ -726,36 +726,42 @@
             setupMobileControls();
         }
 
+        // Mobile joystick state
+        let mobileJoystick = {
+            active: false,
+            touchId: null,
+            deltaX: 0,
+            deltaY: 0
+        };
+
         function setupMobileControls() {
             const joystickArea = document.getElementById('joystick-area');
             const joystickStick = document.getElementById('joystick-stick');
             const shootButton = document.getElementById('shoot-button');
             
-            let joystickActive = false;
-            let joystickId = null;
             let joystickStartX = 0;
             let joystickStartY = 0;
             
             joystickArea.addEventListener('touchstart', (e) => {
                 if (!gameState.gameRunning || gameState.isPaused) return;
                 e.preventDefault();
-                joystickActive = true;
-                joystickId = e.changedTouches[0].identifier;
+                mobileJoystick.active = true;
+                mobileJoystick.touchId = e.changedTouches[0].identifier;
                 const rect = joystickArea.getBoundingClientRect();
                 joystickStartX = rect.left + rect.width / 2;
                 joystickStartY = rect.top + rect.height / 2;
             });
             
             joystickArea.addEventListener('touchmove', (e) => {
-                if (!joystickActive || !gameState.gameRunning || gameState.isPaused) return;
+                if (!mobileJoystick.active || !gameState.gameRunning || gameState.isPaused) return;
                 e.preventDefault();
                 
                 for (let touch of e.changedTouches) {
-                    if (touch.identifier === joystickId) {
+                    if (touch.identifier === mobileJoystick.touchId) {
                         const deltaX = touch.clientX - joystickStartX;
                         const deltaY = touch.clientY - joystickStartY;
                         const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-                        const maxDistance = 45;
+                        const maxDistance = 50;
                         
                         let moveX = deltaX;
                         let moveY = deltaY;
@@ -767,13 +773,9 @@
                         
                         joystickStick.style.transform = `translate(calc(-50% + ${moveX}px), calc(-50% + ${moveY}px))`;
                         
-                        // Update player movement
-                        const angle = Math.atan2(deltaY, deltaX);
-                        const strength = Math.min(distance / maxDistance, 1);
-                        player.x += Math.cos(angle) * player.speed * strength;
-                        player.y += Math.sin(angle) * player.speed * strength;
-                        player.x = Math.max(player.size, Math.min(CONFIG.CANVAS_WIDTH - player.size, player.x));
-                        player.y = Math.max(player.size, Math.min(CONFIG.CANVAS_HEIGHT - player.size, player.y));
+                        // Store joystick input for continuous movement
+                        mobileJoystick.deltaX = deltaX;
+                        mobileJoystick.deltaY = deltaY;
                         
                         break;
                     }
@@ -782,9 +784,11 @@
             
             joystickArea.addEventListener('touchend', (e) => {
                 for (let touch of e.changedTouches) {
-                    if (touch.identifier === joystickId) {
-                        joystickActive = false;
-                        joystickId = null;
+                    if (touch.identifier === mobileJoystick.touchId) {
+                        mobileJoystick.active = false;
+                        mobileJoystick.touchId = null;
+                        mobileJoystick.deltaX = 0;
+                        mobileJoystick.deltaY = 0;
                         joystickStick.style.transform = 'translate(-50%, -50%)';
                         break;
                     }
@@ -1101,11 +1105,31 @@
 
         function updatePlayer() {
             let dx = 0, dy = 0;
+            
+            // Desktop keyboard controls
             if (keys.has('w') || keys.has('arrowup')) dy -= 1;
             if (keys.has('s') || keys.has('arrowdown')) dy += 1;
             if (keys.has('a') || keys.has('arrowleft')) dx -= 1;
             if (keys.has('d') || keys.has('arrowright')) dx += 1;
-            if (dx && dy) { dx *= 0.707; dy *= 0.707; }
+            
+            // Mobile joystick controls
+            if (mobileJoystick.active) {
+                const distance = Math.sqrt(mobileJoystick.deltaX * mobileJoystick.deltaX + mobileJoystick.deltaY * mobileJoystick.deltaY);
+                const maxDistance = 50;
+                const strength = Math.min(distance / maxDistance, 1);
+                
+                if (distance > 5) { // Dead zone
+                    const angle = Math.atan2(mobileJoystick.deltaY, mobileJoystick.deltaX);
+                    dx = Math.cos(angle) * strength;
+                    dy = Math.sin(angle) * strength;
+                }
+            }
+            
+            // Normalize diagonal movement
+            if (dx && dy && !mobileJoystick.active) { 
+                dx *= 0.707; 
+                dy *= 0.707; 
+            }
             
             // Calculate new position
             let newX = player.x + dx * player.speed;
@@ -1119,9 +1143,40 @@
             player.x = newX;
             player.y = newY;
             
-            const wmx = (mouse.x / gameState.zoom) + player.x - (canvas.width / 2 / gameState.zoom);
-            const wmy = (mouse.y / gameState.zoom) + player.y - (canvas.height / 2 / gameState.zoom);
-            player.angle = Math.atan2(wmy - player.y, wmx - player.x);
+            // Auto-aim: find closest target (zombie or boss)
+            let closestTarget = null;
+            let closestDistance = Infinity;
+            
+            // Check zombies
+            for (const z of zombies) {
+                const dx = z.x - player.x;
+                const dy = z.y - player.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < closestDistance) {
+                    closestDistance = dist;
+                    closestTarget = {x: z.x, y: z.y};
+                }
+            }
+            
+            // Check bosses
+            for (const boss of bosses) {
+                const dx = boss.x - player.x;
+                const dy = boss.y - player.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < closestDistance) {
+                    closestDistance = dist;
+                    closestTarget = {x: boss.x, y: boss.y};
+                }
+            }
+            
+            // Aim at closest target, otherwise use mouse
+            if (closestTarget) {
+                player.angle = Math.atan2(closestTarget.y - player.y, closestTarget.x - player.x);
+            } else {
+                const wmx = (mouse.x / gameState.zoom) + player.x - (canvas.width / 2 / gameState.zoom);
+                const wmy = (mouse.y / gameState.zoom) + player.y - (canvas.height / 2 / gameState.zoom);
+                player.angle = Math.atan2(wmy - player.y, wmx - player.x);
+            }
         }
 
         function updateZombies() {
