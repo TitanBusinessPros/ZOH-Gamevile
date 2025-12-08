@@ -2150,12 +2150,23 @@
             }
             ctx.fillRect(0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT);
             
-            // Draw buildings (LAZY LOADED)
+// Draw buildings (LAZY LOADED + CULLED)
 for (let i = 0; i < buildings.length; i++) {
     const b = buildings[i];
+
+    // ✅ VIEWPORT CULLING (skip off-screen buildings)
+    if (
+        b.x + b.width < vx || 
+        b.x > vx + canvas.width / gameState.zoom ||
+        b.y + b.height < vy || 
+        b.y > vy + canvas.height / gameState.zoom
+    ) {
+        continue; // <-- SKIP drawing if off-screen
+    }
+
     const key = 'building' + b.id;
 
-    // ✅ LAZY LOAD TRIGGER
+    // ✅ KEEP LAZY LOADING
     loadImageIfNeeded(key);
 
     const buildingImg = IMG[key];
@@ -2170,6 +2181,7 @@ for (let i = 0; i < buildings.length; i++) {
         ctx.strokeRect(b.x, b.y, b.width, b.height);
     }
 }
+
 
             
             // Ammo
@@ -2212,38 +2224,49 @@ for (let i = 0; i < buildings.length; i++) {
             }
             
             // Zombies
-            for (const z of zombies) {
-                // Add this line before drawing the zombie
-                loadImageIfNeeded('zombie' + z.type);
-                const zi = IMG['zombie' + z.type];
-                
-                // Make ghost zombies (8 & 9) semi-transparent
-                if (z.canPassThroughBuildings) {
-                    ctx.globalAlpha = 0.7;
-                }
-                
-                if (zi && zi.complete && zi.naturalWidth > 0 && SPRITES['zombie' + z.type]) {
-                    ctx.save();
-                    ctx.translate(z.x, z.y);
-                    ctx.drawImage(zi, -z.size/2, -z.size/2, z.size, z.size);
-                    ctx.restore();
-                } else {
-                    const hue = (z.type * 20) % 360;
-                    ctx.fillStyle = `hsl(${hue},70%,40%)`;
-                    ctx.beginPath();
-                    ctx.arc(z.x, z.y, z.size/2, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-                
-                // Reset alpha
-                ctx.globalAlpha = 1;
-                
-                const hp = Math.max(0, z.health / 100);
-                ctx.fillStyle = '#f00';
-                ctx.fillRect(z.x - 20, z.y - 35, 40, 5);
-                ctx.fillStyle = '#0f0';
-                ctx.fillRect(z.x - 20, z.y - 35, 40 * hp, 5);
-            }
+            // Zombies (LAZY LOADED + CULLED)
+for (const z of zombies) {
+
+    // ✅ VIEWPORT CULLING (skip off-screen zombies)
+    if (
+        z.x + z.size < vx ||
+        z.x - z.size > vx + canvas.width / gameState.zoom ||
+        z.y + z.size < vy ||
+        z.y - z.size > vy + canvas.height / gameState.zoom
+    ) {
+        continue; // <-- Skip drawing this zombie
+    }
+
+    // ✅ KEEP LAZY LOADING
+    loadImageIfNeeded('zombie' + z.type);
+    const zi = IMG['zombie' + z.type];
+
+    if (z.canPassThroughBuildings) {
+        ctx.globalAlpha = 0.7;
+    }
+
+    if (zi && zi.complete && zi.naturalWidth > 0 && SPRITES['zombie' + z.type]) {
+        ctx.save();
+        ctx.translate(z.x, z.y);
+        ctx.drawImage(zi, -z.size/2, -z.size/2, z.size, z.size);
+        ctx.restore();
+    } else {
+        const hue = (z.type * 20) % 360;
+        ctx.fillStyle = `hsl(${hue},70%,40%)`;
+        ctx.beginPath();
+        ctx.arc(z.x, z.y, z.size/2, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    ctx.globalAlpha = 1;
+
+    const hp = Math.max(0, z.health / 100);
+    ctx.fillStyle = '#f00';
+    ctx.fillRect(z.x - 20, z.y - 35, 40, 5);
+    ctx.fillStyle = '#0f0';
+    ctx.fillRect(z.x - 20, z.y - 35, 40 * hp, 5);
+}
+
             
             // Bosses
             if (gameState.bossActive && bosses.length > 0) {
