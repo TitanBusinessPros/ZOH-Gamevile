@@ -471,7 +471,7 @@
         
         <div id="cutscene-screen" class="screen hidden" style="background: rgba(0, 0, 0, 1);">
             <video id="cutscene-video" style="max-width: 90%; max-height: 90%; width: auto; height: auto;" playsinline webkit-playsinline preload="auto">
-                <source src="https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Ad-1-Zombie.mp4" type="video/mp4">
+                <source src="https://github.com/TitanBusinessPros/ZOH-Gamevile/raw/main/ZOH-AD-2.mp4" type="video/mp4">
             </video>
             <div id="skip-cutscene-btn" style="position: absolute; bottom: 30px; right: 30px; background: rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 5px; color: white; font-size: 14px; cursor: pointer; pointer-events: auto; display: none;">
                 Click to Skip (5s)
@@ -491,31 +491,31 @@
         const CONFIG = {
             CANVAS_WIDTH: 3000,
             CANVAS_HEIGHT: 3000,
-            STARTING_AMMO: 20,
-            STARTING_LIVES: 99,
-            ZOMBIES_PER_STAGE: [10, 10, 5, 5, 6, 7, 8, 9, 10, 11],
+            STARTING_AMMO: 120,
+            STARTING_LIVES: 20,
+            ZOMBIES_PER_STAGE: [50, 100, 150, 200, 250, 300, 350, 400, 450, 500],
             TOTAL_STAGES: 10,
             PLAYER_SPEED: 8,
             PLAYER_SIZE: 100,
             ZOMBIE_SPEED_MIN: 0.5,
-            ZOMBIE_SPEED_MAX: 0.5,
+            ZOMBIE_SPEED_MAX: 0.8,
             ZOMBIE_SIZE: 75,
             // Shotgun
-            SHOTGUN_DAMAGE: 540,
-            SHOTGUN_RANGE: 750,
+            SHOTGUN_DAMAGE: 240,
+            SHOTGUN_RANGE: 550,
             SHOTGUN_SPREAD: 0.4,
             SHOTGUN_PELLETS: 6,
             SHOTGUN_FIRE_RATE: 800,
             // Fire Gun
-            FIRE_GUN_DAMAGE: 125,
-            FIRE_GUN_RANGE: 600,
+            FIRE_GUN_DAMAGE: 25,
+            FIRE_GUN_RANGE: 200,
             FIRE_GUN_SPREAD: 2.15,
             FIRE_GUN_FIRE_RATE: 300,
             FIRE_GUN_BURN_DAMAGE: 15,
             FIRE_GUN_BURN_DURATION: 9000,
             // Ice Gun
-            ICE_GUN_DAMAGE: 130,
-            ICE_GUN_RANGE: 580,
+            ICE_GUN_DAMAGE: 30,
+            ICE_GUN_RANGE: 280,
             ICE_GUN_SPREAD: 2.2,
             ICE_GUN_FIRE_RATE: 500,
             ICE_GUN_SLOW_FACTOR: 2.5,
@@ -528,7 +528,7 @@
             ZOOM_STEP: 0.25,
             INVINCIBILITY_TIME: 1000,
             // Portal System Configuration
-            PORTAL_HEALTH: 1000,
+            PORTAL_HEALTH: 5000,
             PORTAL_SPAWN_INTERVAL: 180000, // 3 minutes in milliseconds
             PORTAL_SIZE: 100,
             PORTAL_WARN_TIME: 5000, // 5 seconds warning before spawn
