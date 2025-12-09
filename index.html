@@ -122,24 +122,6 @@
             color: #555;
         }
         
-        #weapon-info {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 12px 20px;
-            border-radius: 8px;
-            border: 2px solid #4a4a4a;
-            pointer-events: auto;
-            text-align: center;
-        }
-        
-        #weapon-name {
-            color: #ffd166;
-            font-size: 1.3rem;
-            margin-bottom: 5px;
-        }
-        
         #zoom-controls {
             position: absolute;
             bottom: 20px;
@@ -401,11 +383,6 @@
                 </div>
             </div>
             
-            <div id="weapon-info">
-                <div id="weapon-name">SHOTGUN</div>
-                <div id="ammo-info">20/∞</div>
-            </div>
-            
             <button id="pause-btn" style="position: absolute; top: 15px; right: 15px; width: 50px; height: 50px; background: rgba(0,0,0,0.7); border: 2px solid #4a4a4a; border-radius: 8px; color: white; font-size: 1.5rem; cursor: pointer; pointer-events: auto; display: flex; align-items: center; justify-content: center;">⏸</button>
             
             <div id="save-indicator">GAME SAVED</div>
@@ -497,18 +474,33 @@
             CANVAS_HEIGHT: 3000,
             STARTING_AMMO: 20,
             STARTING_LIVES: 99,
-            ZOMBIES_PER_STAGE: [10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
+            ZOMBIES_PER_STAGE: [10, 10, 5, 5, 6, 7, 8, 9, 10, 11],
             TOTAL_STAGES: 10,
             PLAYER_SPEED: 8,
-            PLAYER_SIZE: 50,
+            PLAYER_SIZE: 100,
             ZOMBIE_SPEED_MIN: 0.5,
             ZOMBIE_SPEED_MAX: 0.5,
-            ZOMBIE_SIZE: 45,
-            SHOTGUN_DAMAGE: 2990,
+            ZOMBIE_SIZE: 75,
+            // Shotgun
+            SHOTGUN_DAMAGE: 540,
             SHOTGUN_RANGE: 750,
             SHOTGUN_SPREAD: 0.4,
-            SHOTGUN_PELLETS: 9,
+            SHOTGUN_PELLETS: 6,
             SHOTGUN_FIRE_RATE: 800,
+            // Fire Gun
+            FIRE_GUN_DAMAGE: 125,
+            FIRE_GUN_RANGE: 600,
+            FIRE_GUN_SPREAD: 2.15,
+            FIRE_GUN_FIRE_RATE: 300,
+            FIRE_GUN_BURN_DAMAGE: 15,
+            FIRE_GUN_BURN_DURATION: 9000,
+            // Ice Gun
+            ICE_GUN_DAMAGE: 130,
+            ICE_GUN_RANGE: 580,
+            ICE_GUN_SPREAD: 2.2,
+            ICE_GUN_FIRE_RATE: 500,
+            ICE_GUN_SLOW_FACTOR: 2.5,
+            ICE_GUN_SLOW_DURATION: 6000,
             AMMO_DROP_CHANCE: 0.3,
             HIDDEN_AMMO_COUNT: 50,
             MIN_ZOOM: 0.5,
@@ -616,7 +608,9 @@
             isPaused: false,
             // Portal system state
             portalActive: false,
-            portalDestroyed: false
+            portalDestroyed: false,
+            // Weapon system
+            currentWeapon: 'shotgun' // 'shotgun', 'fire', 'ice'
         };
 
         // Portal object - will be initialized per stage
@@ -637,6 +631,8 @@
         const ammoPacks = [];
         const bloodSplatters = [];
         const bulletTraces = [];
+        const fireEffects = []; // Fire visual effects
+        const iceEffects = []; // Ice visual effects
         const keys = new Set();
         const mouse = { x: 0, y: 0 };
 
@@ -726,6 +722,19 @@
             window.addEventListener('keydown', (e) => {
                 if (gameState.gameRunning) {
                     const key = e.key.toLowerCase();
+                    
+                    // Weapon switching with 1, 2, 3 keys
+                    if (key === '1') {
+                        gameState.currentWeapon = 'shotgun';
+                        console.log('Switched to Shotgun');
+                    } else if (key === '2') {
+                        gameState.currentWeapon = 'fire';
+                        console.log('Switched to Fire Gun');
+                    } else if (key === '3') {
+                        gameState.currentWeapon = 'ice';
+                        console.log('Switched to Ice Gun');
+                    }
+                    
                     if (['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright',' '].includes(key)) {
                         e.preventDefault();
                         keys.add(key);
@@ -1596,29 +1605,12 @@
         /**
          * Check bullet collision with portal
          */
-        function checkPortalHit(bulletX, bulletY, bulletStartX, bulletStartY) {
+        function checkPortalHit(bulletX, bulletY, bulletStartX, bulletStartY, damage) {
             if (!activePortal || !activePortal.active) return false;
             
-            // Line-circle collision detection
-            const ldx = bulletX - bulletStartX;
-            const ldy = bulletY - bulletStartY;
-            const ll = Math.sqrt(ldx*ldx + ldy*ldy);
-            if (ll === 0) return false;
-            
-            const lux = ldx/ll, luy = ldy/ll;
-            const tcx = activePortal.x - bulletStartX;
-            const tcy = activePortal.y - bulletStartY;
-            const proj = tcx*lux + tcy*luy;
-            const clamp = Math.max(0, Math.min(ll, proj));
-            const cpx = bulletStartX + clamp*lux;
-            const cpy = bulletStartY + clamp*luy;
-            const dx = activePortal.x - cpx;
-            const dy = activePortal.y - cpy;
-            const dist = Math.sqrt(dx*dx + dy*dy);
-            
-            if (dist <= activePortal.size / 2) {
-                activePortal.health -= CONFIG.SHOTGUN_DAMAGE;
-                bloodSplatters.push({x: cpx, y: cpy, size: 8 + Math.random() * 12, alpha: 1});
+            if (checkLineCircleCollision(bulletStartX, bulletStartY, bulletX, bulletY, activePortal.x, activePortal.y, activePortal.size / 2)) {
+                activePortal.health -= damage;
+                createHitEffect(activePortal.x, activePortal.y);
                 console.log('[PORTAL] Hit! Health:', activePortal.health, '/', activePortal.maxHealth);
                 return true;
             }
@@ -1629,29 +1621,14 @@
         /**
          * Check bullet collision with boss clones
          */
-        function checkCloneHits(bulletX, bulletY, bulletStartX, bulletStartY) {
+        function checkCloneHits(bulletX, bulletY, bulletStartX, bulletStartY, damage) {
             for (const clone of bossClones) {
-                if (clone.isInvulnerable) continue; // Skip invulnerable clones
+                if (clone.isInvulnerable) continue;
                 
-                const ldx = bulletX - bulletStartX;
-                const ldy = bulletY - bulletStartY;
-                const ll = Math.sqrt(ldx*ldx + ldy*ldy);
-                if (ll === 0) continue;
-                
-                const lux = ldx/ll, luy = ldy/ll;
-                const tcx = clone.x - bulletStartX;
-                const tcy = clone.y - bulletStartY;
-                const proj = tcx*lux + tcy*luy;
-                const clamp = Math.max(0, Math.min(ll, proj));
-                const cpx = bulletStartX + clamp*lux;
-                const cpy = bulletStartY + clamp*luy;
-                const dx = clone.x - cpx;
-                const dy = clone.y - cpy;
-                const dist = Math.sqrt(dx*dx + dy*dy);
-                
-                if (dist <= clone.size/2) {
-                    clone.health -= CONFIG.SHOTGUN_DAMAGE;
-                    bloodSplatters.push({x: cpx, y: cpy, size: 8 + Math.random() * 12, alpha: 1});
+                if (checkLineCircleCollision(bulletStartX, bulletStartY, bulletX, bulletY, clone.x, clone.y, clone.size/2)) {
+                    clone.health -= damage;
+                    createHitEffect(clone.x, clone.y);
+                    applyWeaponEffect(clone);
                 }
             }
         }
@@ -1728,6 +1705,7 @@
             updateBoss();
             updatePortal(); // Update portal spawn timer
             updateBossClones(); // Update all clones
+            updateStatusEffects(); // Update burn/freeze effects
             updateAmmo();
             updateBulletTraces();
             updateHUD();
@@ -1972,7 +1950,7 @@
             
             // Bullets
             for (const t of bulletTraces) {
-                ctx.strokeStyle = `rgba(255,255,0,${t.life})`;
+                ctx.strokeStyle = t.color ? t.color.replace('1)', `${t.life})`) : `rgba(255,255,0,${t.life})`;
                 ctx.lineWidth = 2;
                 ctx.beginPath();
                 ctx.moveTo(t.start.x, t.start.y);
@@ -1991,6 +1969,22 @@
                 if (s.alpha <= 0) bloodSplatters.splice(i, 1);
             }
             
+            // Fire effects
+            for (const f of fireEffects) {
+                ctx.fillStyle = `rgba(255,100,0,${f.alpha})`;
+                ctx.beginPath();
+                ctx.arc(f.x + (Math.random() - 0.5) * 5, f.y - f.life * 0.5, 8, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Ice effects
+            for (const ice of iceEffects) {
+                ctx.fillStyle = `rgba(100,200,255,${ice.alpha})`;
+                ctx.beginPath();
+                ctx.arc(ice.x + (Math.random() - 0.5) * 3, ice.y + (Math.random() - 0.5) * 3, 6, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
             // Draw Portal (behind everything)
             drawPortal();
             
@@ -2000,6 +1994,18 @@
                 
                 if (z.canPassThroughBuildings) {
                     ctx.globalAlpha = 0.7;
+                }
+                
+                // Draw burn/freeze overlay
+                if (z.burning || z.frozen) {
+                    ctx.save();
+                    if (z.burning) {
+                        ctx.shadowColor = 'rgba(255,100,0,0.8)';
+                        ctx.shadowBlur = 15;
+                    } else if (z.frozen) {
+                        ctx.shadowColor = 'rgba(100,200,255,0.8)';
+                        ctx.shadowBlur = 15;
+                    }
                 }
                 
                 if (zi && zi.complete && zi.naturalWidth > 0 && SPRITES['zombie' + z.type]) {
@@ -2013,6 +2019,10 @@
                     ctx.beginPath();
                     ctx.arc(z.x, z.y, z.size/2, 0, Math.PI * 2);
                     ctx.fill();
+                }
+                
+                if (z.burning || z.frozen) {
+                    ctx.restore();
                 }
                 
                 ctx.globalAlpha = 1;
@@ -2129,81 +2139,268 @@
             ctx.moveTo(mouse.x, mouse.y - 15);
             ctx.lineTo(mouse.x, mouse.y + 15);
             ctx.stroke();
+            
+            // Weapon indicator (bottom center)
+            const weaponNames = {shotgun: 'SHOTGUN', fire: 'FIRE GUN', ice: 'ICE GUN'};
+            const weaponColors = {shotgun: '#ffd166', fire: '#ff6600', ice: '#66ccff'};
+            ctx.fillStyle = 'rgba(0,0,0,0.7)';
+            ctx.fillRect(canvas.width / 2 - 80, canvas.height - 50, 160, 40);
+            ctx.fillStyle = weaponColors[gameState.currentWeapon];
+            ctx.font = 'bold 18px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(weaponNames[gameState.currentWeapon], canvas.width / 2, canvas.height - 22);
+            ctx.fillStyle = '#fff';
+            ctx.font = '12px Arial';
+            ctx.fillText('1  2  3', canvas.width / 2, canvas.height - 8);
         }
 
         function shoot() {
             if (gameState.playerAmmo <= 0) return;
             const now = Date.now();
-            if (now - gameState.lastShotTime < CONFIG.SHOTGUN_FIRE_RATE) return;
+            
+            // Get weapon config based on current weapon
+            let fireRate, range, spread, pellets, damage;
+            switch(gameState.currentWeapon) {
+                case 'shotgun':
+                    fireRate = CONFIG.SHOTGUN_FIRE_RATE;
+                    range = CONFIG.SHOTGUN_RANGE;
+                    spread = CONFIG.SHOTGUN_SPREAD;
+                    pellets = CONFIG.SHOTGUN_PELLETS;
+                    damage = CONFIG.SHOTGUN_DAMAGE;
+                    break;
+                case 'fire':
+                    fireRate = CONFIG.FIRE_GUN_FIRE_RATE;
+                    range = CONFIG.FIRE_GUN_RANGE;
+                    spread = CONFIG.FIRE_GUN_SPREAD;
+                    pellets = 1;
+                    damage = CONFIG.FIRE_GUN_DAMAGE;
+                    break;
+                case 'ice':
+                    fireRate = CONFIG.ICE_GUN_FIRE_RATE;
+                    range = CONFIG.ICE_GUN_RANGE;
+                    spread = CONFIG.ICE_GUN_SPREAD;
+                    pellets = 1;
+                    damage = CONFIG.ICE_GUN_DAMAGE;
+                    break;
+            }
+            
+            if (now - gameState.lastShotTime < fireRate) return;
             
             gameState.playerAmmo--;
             gameState.lastShotTime = now;
-            playShotgunSound();
+            playWeaponSound(gameState.currentWeapon);
             
-            for (let i = 0; i < CONFIG.SHOTGUN_PELLETS; i++) {
-                const spread = (Math.random() - 0.5) * CONFIG.SHOTGUN_SPREAD;
-                const angle = player.angle + spread;
-                const ex = player.x + Math.cos(angle) * CONFIG.SHOTGUN_RANGE;
-                const ey = player.y + Math.sin(angle) * CONFIG.SHOTGUN_RANGE;
-                bulletTraces.push({start: {x: player.x, y: player.y}, end: {x: ex, y: ey}, life: 1});
+            for (let i = 0; i < pellets; i++) {
+                const spreadAngle = (Math.random() - 0.5) * spread;
+                const angle = player.angle + spreadAngle;
+                const ex = player.x + Math.cos(angle) * range;
+                const ey = player.y + Math.sin(angle) * range;
+                
+                // Create weapon-specific bullet trace
+                const traceColor = gameState.currentWeapon === 'fire' ? 'rgba(255,100,0,1)' : 
+                                   gameState.currentWeapon === 'ice' ? 'rgba(100,200,255,1)' : 
+                                   'rgba(255,255,0,1)';
+                bulletTraces.push({
+                    start: {x: player.x, y: player.y}, 
+                    end: {x: ex, y: ey}, 
+                    life: 1,
+                    color: traceColor
+                });
                 
                 // Check portal hit
-                checkPortalHit(ex, ey, player.x, player.y);
+                checkPortalHit(ex, ey, player.x, player.y, damage);
                 
                 // Check clone hits
-                checkCloneHits(ex, ey, player.x, player.y);
+                checkCloneHits(ex, ey, player.x, player.y, damage);
                 
                 // Check all bosses
                 if (gameState.bossActive) {
                     for (const boss of bosses) {
-                        const ldx = ex - player.x, ldy = ey - player.y;
-                        const ll = Math.sqrt(ldx*ldx + ldy*ldy);
-                        const lux = ldx/ll, luy = ldy/ll;
-                        const tcx = boss.x - player.x, tcy = boss.y - player.y;
-                        const proj = tcx*lux + tcy*luy;
-                        const clamp = Math.max(0, Math.min(ll, proj));
-                        const cpx = player.x + clamp*lux, cpy = player.y + clamp*luy;
-                        const dx = boss.x - cpx, dy = boss.y - cpy;
-                        const dist = Math.sqrt(dx*dx + dy*dy);
-                        if (dist <= boss.size/2) {
-                            boss.health -= CONFIG.SHOTGUN_DAMAGE;
-                            bloodSplatters.push({x: cpx, y: cpy, size: 8 + Math.random() * 12, alpha: 1});
+                        if (checkLineCircleCollision(player.x, player.y, ex, ey, boss.x, boss.y, boss.size/2)) {
+                            boss.health -= damage;
+                            createHitEffect(boss.x, boss.y);
+                            applyWeaponEffect(boss);
                         }
                     }
                 }
                 
                 // Check zombie hits
                 for (const z of zombies) {
-                    const ldx = ex - player.x, ldy = ey - player.y;
-                    const ll = Math.sqrt(ldx*ldx + ldy*ldy);
-                    const lux = ldx/ll, luy = ldy/ll;
-                    const tcx = z.x - player.x, tcy = z.y - player.y;
-                    const proj = tcx*lux + tcy*luy;
-                    const clamp = Math.max(0, Math.min(ll, proj));
-                    const cpx = player.x + clamp*lux, cpy = player.y + clamp*luy;
-                    const dx = z.x - cpx, dy = z.y - cpy;
-                    const dist = Math.sqrt(dx*dx + dy*dy);
-                    if (dist <= z.size/2) {
-                        z.health -= CONFIG.SHOTGUN_DAMAGE;
-                        bloodSplatters.push({x: cpx, y: cpy, size: 5 + Math.random() * 10, alpha: 1});
+                    if (checkLineCircleCollision(player.x, player.y, ex, ey, z.x, z.y, z.size/2)) {
+                        z.health -= damage;
+                        createHitEffect(z.x, z.y);
+                        applyWeaponEffect(z);
                     }
                 }
             }
             updateHUD();
         }
 
-        function playShotgunSound() {
+        function checkLineCircleCollision(x1, y1, x2, y2, cx, cy, radius) {
+            const ldx = x2 - x1;
+            const ldy = y2 - y1;
+            const ll = Math.sqrt(ldx*ldx + ldy*ldy);
+            if (ll === 0) return false;
+            
+            const lux = ldx/ll, luy = ldy/ll;
+            const tcx = cx - x1, tcy = cy - y1;
+            const proj = tcx*lux + tcy*luy;
+            const clamp = Math.max(0, Math.min(ll, proj));
+            const cpx = x1 + clamp*lux, cpy = y1 + clamp*luy;
+            const dx = cx - cpx, dy = cy - cpy;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            
+            return dist <= radius;
+        }
+
+        function applyWeaponEffect(target) {
+            if (gameState.currentWeapon === 'fire') {
+                // Apply burn effect
+                if (!target.burning) {
+                    target.burning = true;
+                    target.burnStartTime = Date.now();
+                    target.burnEndTime = Date.now() + CONFIG.FIRE_GUN_BURN_DURATION;
+                    target.lastBurnTick = Date.now();
+                }
+            } else if (gameState.currentWeapon === 'ice') {
+                // Apply slow effect
+                if (!target.originalSpeed) {
+                    target.originalSpeed = target.speed;
+                }
+                target.frozen = true;
+                target.frozenEndTime = Date.now() + CONFIG.ICE_GUN_SLOW_DURATION;
+                target.speed = target.originalSpeed * CONFIG.ICE_GUN_SLOW_FACTOR;
+            }
+        }
+
+        function updateStatusEffects() {
+            const now = Date.now();
+            
+            // Update zombie status effects
+            for (const z of zombies) {
+                // Burn damage over time
+                if (z.burning) {
+                    if (now > z.burnEndTime) {
+                        z.burning = false;
+                    } else {
+                        // Apply burn damage every 500ms
+                        if (now - z.lastBurnTick > 500) {
+                            z.health -= CONFIG.FIRE_GUN_BURN_DAMAGE;
+                            z.lastBurnTick = now;
+                            fireEffects.push({x: z.x, y: z.y, alpha: 1, life: 20});
+                        }
+                    }
+                }
+                
+                // Remove freeze effect
+                if (z.frozen && now > z.frozenEndTime) {
+                    z.frozen = false;
+                    if (z.originalSpeed) {
+                        z.speed = z.originalSpeed;
+                    }
+                }
+            }
+            
+            // Update boss status effects
+            for (const boss of bosses) {
+                if (boss.burning) {
+                    if (now > boss.burnEndTime) {
+                        boss.burning = false;
+                    } else {
+                        if (now - boss.lastBurnTick > 500) {
+                            boss.health -= CONFIG.FIRE_GUN_BURN_DAMAGE;
+                            boss.lastBurnTick = now;
+                            fireEffects.push({x: boss.x, y: boss.y, alpha: 1, life: 20});
+                        }
+                    }
+                }
+                
+                if (boss.frozen && now > boss.frozenEndTime) {
+                    boss.frozen = false;
+                    if (boss.originalSpeed) {
+                        boss.speed = boss.originalSpeed;
+                    }
+                }
+            }
+            
+            // Update clone status effects
+            for (const clone of bossClones) {
+                if (clone.burning) {
+                    if (now > clone.burnEndTime) {
+                        clone.burning = false;
+                    } else {
+                        if (now - clone.lastBurnTick > 500) {
+                            clone.health -= CONFIG.FIRE_GUN_BURN_DAMAGE;
+                            clone.lastBurnTick = now;
+                            fireEffects.push({x: clone.x, y: clone.y, alpha: 1, life: 20});
+                        }
+                    }
+                }
+                
+                if (clone.frozen && now > clone.frozenEndTime) {
+                    clone.frozen = false;
+                    if (clone.originalSpeed) {
+                        clone.speed = clone.originalSpeed;
+                    }
+                }
+            }
+            
+            // Update fire effects
+            for (let i = fireEffects.length - 1; i >= 0; i--) {
+                fireEffects[i].life--;
+                fireEffects[i].alpha = fireEffects[i].life / 20;
+                if (fireEffects[i].life <= 0) fireEffects.splice(i, 1);
+            }
+            
+            // Update ice effects
+            for (let i = iceEffects.length - 1; i >= 0; i--) {
+                iceEffects[i].life--;
+                iceEffects[i].alpha = iceEffects[i].life / 20;
+                if (iceEffects[i].life <= 0) iceEffects.splice(i, 1);
+            }
+        }
+
+        function createHitEffect(x, y) {
+            if (gameState.currentWeapon === 'shotgun') {
+                bloodSplatters.push({x, y, size: 8 + Math.random() * 12, alpha: 1});
+            } else if (gameState.currentWeapon === 'fire') {
+                fireEffects.push({x, y, alpha: 1, life: 20});
+            } else if (gameState.currentWeapon === 'ice') {
+                iceEffects.push({x, y, alpha: 1, life: 20});
+            }
+        }
+
+        function playWeaponSound(weapon) {
             try {
                 const ac = new (window.AudioContext || window.webkitAudioContext)();
                 const osc = ac.createOscillator(), gain = ac.createGain();
                 osc.connect(gain);
                 gain.connect(ac.destination);
-                osc.frequency.setValueAtTime(120, ac.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(40, ac.currentTime + 0.3);
-                gain.gain.setValueAtTime(0.3, ac.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, ac.currentTime + 0.3);
-                osc.start(ac.currentTime);
-                osc.stop(ac.currentTime + 0.3);
+                
+                if (weapon === 'shotgun') {
+                    osc.frequency.setValueAtTime(120, ac.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(40, ac.currentTime + 0.3);
+                    gain.gain.setValueAtTime(0.3, ac.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ac.currentTime + 0.3);
+                    osc.start(ac.currentTime);
+                    osc.stop(ac.currentTime + 0.3);
+                } else if (weapon === 'fire') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(300, ac.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(150, ac.currentTime + 0.2);
+                    gain.gain.setValueAtTime(0.2, ac.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ac.currentTime + 0.2);
+                    osc.start(ac.currentTime);
+                    osc.stop(ac.currentTime + 0.2);
+                } else if (weapon === 'ice') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, ac.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(800, ac.currentTime + 0.15);
+                    gain.gain.setValueAtTime(0.2, ac.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ac.currentTime + 0.15);
+                    osc.start(ac.currentTime);
+                    osc.stop(ac.currentTime + 0.15);
+                }
             } catch(e) {}
         }
 
@@ -2324,7 +2521,8 @@
                 bossPlayedSound: false,
                 isPaused: false,
                 portalActive: false,
-                portalDestroyed: false
+                portalDestroyed: false,
+                currentWeapon: 'shotgun'
             };
             player.x = CONFIG.CANVAS_WIDTH / 2;
             player.y = CONFIG.CANVAS_HEIGHT / 2;
