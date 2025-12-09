@@ -47,17 +47,47 @@
             top: 15px;
             left: 15px;
             background: rgba(0, 0, 0, 0.7);
-            padding: 12px 20px;
             border-radius: 8px;
             border: 2px solid #4a4a4a;
             pointer-events: auto;
             min-width: 220px;
+            transition: all 0.3s ease;
         }
         
-        #hud h2 {
+        #hud-header {
+            padding: 12px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        #hud-header h2 {
             color: #ff6b6b;
-            margin-bottom: 8px;
             font-size: 1.2rem;
+            margin: 0;
+        }
+        
+        #hud-toggle {
+            color: #4ecdc4;
+            font-size: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+        
+        #hud-toggle.open {
+            transform: rotate(180deg);
+        }
+        
+        #hud-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            padding: 0 20px;
+        }
+        
+        #hud-content.open {
+            max-height: 300px;
+            padding: 0 20px 12px 20px;
         }
         
         .hud-item {
@@ -311,7 +341,7 @@
             }
             
             #zoom-controls {
-                bottom: 200px;
+                display: none;
             }
             
             #pause-btn {
@@ -322,7 +352,7 @@
             
             #hud {
                 font-size: 0.9rem;
-                top: 60px !important;
+                top: 15px !important;
             }
             
             #instructions {
@@ -337,31 +367,36 @@
         
         <div id="game-ui">
             <div id="hud">
-                <h2>ZOMBIE SURVIVAL</h2>
-                <div class="hud-item">
-                    <span>Stage:</span>
-                    <span id="stage" class="hud-value">1</span>
+                <div id="hud-header">
+                    <h2>ZOMBIE SURVIVAL</h2>
+                    <span id="hud-toggle">▼</span>
                 </div>
-                <div class="hud-item">
-                    <span>Left:</span>
-                    <span id="zombies-left" class="hud-value">200</span>
-                </div>
-                <div class="hud-item">
-                    <span>Killed:</span>
-                    <span id="zombies-killed" class="hud-value">0</span>
-                </div>
-                <div class="hud-item">
-                    <span>Ammo:</span>
-                    <span id="ammo-count" class="hud-value">20</span>
-                </div>
-                <div id="lives-container">
-                    <span>Lives:</span>
-                    <div id="lives-display">
-                        <span class="life-heart">♥</span>
-                        <span class="life-heart">♥</span>
-                        <span class="life-heart">♥</span>
-                        <span class="life-heart">♥</span>
-                        <span class="life-heart">♥</span>
+                <div id="hud-content">
+                    <div class="hud-item">
+                        <span>Stage:</span>
+                        <span id="stage" class="hud-value">1</span>
+                    </div>
+                    <div class="hud-item">
+                        <span>Left:</span>
+                        <span id="zombies-left" class="hud-value">200</span>
+                    </div>
+                    <div class="hud-item">
+                        <span>Killed:</span>
+                        <span id="zombies-killed" class="hud-value">0</span>
+                    </div>
+                    <div class="hud-item">
+                        <span>Ammo:</span>
+                        <span id="ammo-count" class="hud-value">20</span>
+                    </div>
+                    <div id="lives-container">
+                        <span>Lives:</span>
+                        <div id="lives-display">
+                            <span class="life-heart">♥</span>
+                            <span class="life-heart">♥</span>
+                            <span class="life-heart">♥</span>
+                            <span class="life-heart">♥</span>
+                            <span class="life-heart">♥</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -479,10 +514,10 @@
         // Leave blank "" to use colored shapes
         // ============================================
         const SPRITES = {
-            player: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/tank-2.png",
-            zombie1: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Zombie-10.png",
-            zombie2: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Zombie-10.png",
-            zombie3: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Zombie-10.png",
+            player: "",
+            zombie1: "",
+            zombie2: "",
+            zombie3: "",
             zombie4: "",
             zombie5: "",
             zombie6: "",
@@ -507,7 +542,7 @@
             boss10: "",
             boss11: "",
             boss12: "",
-            groundTile1: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Tile-1.png",
+            groundTile1: "",
             groundTile2: "",
             groundTile3: "",
             groundTile4: "",
@@ -693,12 +728,49 @@
                 else if (e.deltaY > 0 && gameState.zoom > CONFIG.MIN_ZOOM) gameState.zoom -= CONFIG.ZOOM_STEP;
             }, {passive: false});
             
+            // Pinch-to-zoom for mobile
+            let pinchStartDistance = 0;
+            canvas.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 2) {
+                    const dx = e.touches[0].clientX - e.touches[1].clientX;
+                    const dy = e.touches[0].clientY - e.touches[1].clientY;
+                    pinchStartDistance = Math.sqrt(dx * dx + dy * dy);
+                }
+            });
+            
+            canvas.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 2) {
+                    e.preventDefault();
+                    const dx = e.touches[0].clientX - e.touches[1].clientX;
+                    const dy = e.touches[0].clientY - e.touches[1].clientY;
+                    const currentDistance = Math.sqrt(dx * dx + dy * dy);
+                    const delta = currentDistance - pinchStartDistance;
+                    
+                    if (Math.abs(delta) > 5) {
+                        if (delta > 0 && gameState.zoom < CONFIG.MAX_ZOOM) {
+                            gameState.zoom += CONFIG.ZOOM_STEP * 0.5;
+                        } else if (delta < 0 && gameState.zoom > CONFIG.MIN_ZOOM) {
+                            gameState.zoom -= CONFIG.ZOOM_STEP * 0.5;
+                        }
+                        pinchStartDistance = currentDistance;
+                    }
+                }
+            }, {passive: false});
+            
             document.getElementById('zoom-in').addEventListener('click', () => {
                 if (gameState.zoom < CONFIG.MAX_ZOOM) gameState.zoom += CONFIG.ZOOM_STEP;
             });
             
             document.getElementById('zoom-out').addEventListener('click', () => {
                 if (gameState.zoom > CONFIG.MIN_ZOOM) gameState.zoom -= CONFIG.ZOOM_STEP;
+            });
+            
+            // HUD dropdown toggle
+            document.getElementById('hud-header').addEventListener('click', () => {
+                const content = document.getElementById('hud-content');
+                const toggle = document.getElementById('hud-toggle');
+                content.classList.toggle('open');
+                toggle.classList.toggle('open');
             });
             
             document.getElementById('start-btn').addEventListener('click', () => {
