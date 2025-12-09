@@ -582,7 +582,8 @@
         let gameState = {
             stage: 1,
             zombiesKilled: 0,
-            zombiesLeft: CONFIG.ZOMBIES_PER_STAGE[0],
+            zombiesRemaining: CONFIG.ZOMBIES_PER_STAGE[0],
+            zombiesToSpawn: CONFIG.ZOMBIES_PER_STAGE[0],
             playerLives: CONFIG.STARTING_LIVES,
             playerAmmo: CONFIG.STARTING_AMMO,
             totalAmmoCollected: 0,
@@ -775,6 +776,16 @@
             
             document.getElementById('start-btn').addEventListener('click', () => {
                 clearSave();
+                
+                // Spawn zombies and ammo for new game
+                zombies.length = 0;
+                bosses.length = 0;
+                ammoPacks.length = 0;
+                spawnInitialZombies();
+                spawnHiddenAmmo();
+                spawnBoss();
+                updateHUD();
+                
                 document.getElementById('start-screen').classList.add('hidden');
                 gameState.gameRunning = true;
                 playStageMusic(gameState.stage);
@@ -884,7 +895,7 @@
             if (gameState.isPaused) {
                 // Update pause screen info
                 document.getElementById('pause-stage').textContent = gameState.stage;
-                document.getElementById('pause-zombies').textContent = gameState.zombiesLeft;
+                document.getElementById('pause-zombies').textContent = gameState.zombiesRemaining;
                 document.getElementById('pause-lives').textContent = gameState.playerLives;
                 document.getElementById('pause-ammo').textContent = gameState.playerAmmo;
                 pauseScreen.classList.remove('hidden');
@@ -915,9 +926,6 @@
         function initGame() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            spawnInitialZombies();
-            spawnHiddenAmmo();
-            spawnBoss();
             updateHUD();
             updateLivesDisplay();
             setupEvents();
@@ -933,7 +941,8 @@
                     gameState.playerLives = saveData.playerLives;
                     gameState.playerAmmo = saveData.playerAmmo;
                     gameState.totalAmmoCollected = saveData.totalAmmoCollected;
-                    gameState.zombiesLeft = CONFIG.ZOMBIES_PER_STAGE[gameState.stage - 1];
+                    gameState.zombiesRemaining = CONFIG.ZOMBIES_PER_STAGE[gameState.stage - 1];
+                    gameState.zombiesToSpawn = CONFIG.ZOMBIES_PER_STAGE[gameState.stage - 1];
                     
                     // Reset for current stage
                     zombies.length = 0;
@@ -955,37 +964,17 @@
         }
 
         function spawnInitialZombies() {
-            const n = Math.min(30, gameState.zombiesLeft);
-            for (let i = 0; i < n; i++) spawnZombie();
+            const n = Math.min(30, gameState.zombiesToSpawn);
+            for (let i = 0; i < n; i++) {
+                spawnZombieWithoutDecrement();
+            }
             
             // Always spawn zombie 8 and 9 on every stage
             spawnGhostZombie(8);
             spawnGhostZombie(9);
         }
-
-        function spawnGhostZombie(type) {
-            const side = Math.floor(Math.random() * 4);
-            let x, y;
-            switch(side) {
-                case 0: x = -50; y = Math.random() * CONFIG.CANVAS_HEIGHT; break;
-                case 1: x = CONFIG.CANVAS_WIDTH + 50; y = Math.random() * CONFIG.CANVAS_HEIGHT; break;
-                case 2: x = Math.random() * CONFIG.CANVAS_WIDTH; y = -50; break;
-                case 3: x = Math.random() * CONFIG.CANVAS_WIDTH; y = CONFIG.CANVAS_HEIGHT + 50; break;
-            }
-            
-            zombies.push({
-                x, y,
-                size: CONFIG.ZOMBIE_SIZE,
-                speed: CONFIG.ZOMBIE_SPEED_MIN + Math.random() * (CONFIG.ZOMBIE_SPEED_MAX - CONFIG.ZOMBIE_SPEED_MIN),
-                type: type,
-                health: 50 + Math.floor(Math.random() * 50),
-                canPassThroughBuildings: true,
-                isGhost: true
-            });
-        }
-
-        function spawnZombie() {
-            if (gameState.zombiesLeft <= 0) return;
+        
+        function spawnZombieWithoutDecrement() {
             const side = Math.floor(Math.random() * 4);
             let x, y;
             switch(side) {
@@ -1021,7 +1010,68 @@
                 health: 50 + Math.floor(Math.random() * 50),
                 canPassThroughBuildings: (zombieType === 8 || zombieType === 9)
             });
-            gameState.zombiesLeft--;
+            // Don't decrement zombiesLeft for initial spawns
+        }
+
+        function spawnGhostZombie(type) {
+            const side = Math.floor(Math.random() * 4);
+            let x, y;
+            switch(side) {
+                case 0: x = -50; y = Math.random() * CONFIG.CANVAS_HEIGHT; break;
+                case 1: x = CONFIG.CANVAS_WIDTH + 50; y = Math.random() * CONFIG.CANVAS_HEIGHT; break;
+                case 2: x = Math.random() * CONFIG.CANVAS_WIDTH; y = -50; break;
+                case 3: x = Math.random() * CONFIG.CANVAS_WIDTH; y = CONFIG.CANVAS_HEIGHT + 50; break;
+            }
+            
+            zombies.push({
+                x, y,
+                size: CONFIG.ZOMBIE_SIZE,
+                speed: CONFIG.ZOMBIE_SPEED_MIN + Math.random() * (CONFIG.ZOMBIE_SPEED_MAX - CONFIG.ZOMBIE_SPEED_MIN),
+                type: type,
+                health: 50 + Math.floor(Math.random() * 50),
+                canPassThroughBuildings: true,
+                isGhost: true
+            });
+        }
+
+        function spawnZombie() {
+            if (gameState.zombiesToSpawn <= 0) return;
+            const side = Math.floor(Math.random() * 4);
+            let x, y;
+            switch(side) {
+                case 0: x = -50; y = Math.random() * CONFIG.CANVAS_HEIGHT; break;
+                case 1: x = CONFIG.CANVAS_WIDTH + 50; y = Math.random() * CONFIG.CANVAS_HEIGHT; break;
+                case 2: x = Math.random() * CONFIG.CANVAS_WIDTH; y = -50; break;
+                case 3: x = Math.random() * CONFIG.CANVAS_WIDTH; y = CONFIG.CANVAS_HEIGHT + 50; break;
+            }
+            
+            // Determine zombie types based on stage
+            let maxZombieType;
+            switch(gameState.stage) {
+                case 1: maxZombieType = 3; break;
+                case 2: maxZombieType = 4; break;
+                case 3: maxZombieType = 6; break;
+                case 4: maxZombieType = 8; break;
+                case 5: maxZombieType = 9; break;
+                case 6: maxZombieType = 10; break;
+                case 7: maxZombieType = 11; break;
+                case 8: maxZombieType = 12; break;
+                case 9: maxZombieType = 13; break;
+                case 10: maxZombieType = 14; break;
+                default: maxZombieType = 3; break;
+            }
+            
+            const zombieType = Math.floor(Math.random() * maxZombieType) + 1;
+            
+            zombies.push({
+                x, y,
+                size: CONFIG.ZOMBIE_SIZE,
+                speed: CONFIG.ZOMBIE_SPEED_MIN + Math.random() * (CONFIG.ZOMBIE_SPEED_MAX - CONFIG.ZOMBIE_SPEED_MIN),
+                type: zombieType,
+                health: 50 + Math.floor(Math.random() * 50),
+                canPassThroughBuildings: (zombieType === 8 || zombieType === 9)
+            });
+            gameState.zombiesToSpawn--;
         }
 
         function spawnHiddenAmmo() {
@@ -1080,7 +1130,7 @@
                 
                 // Check stage completion
                 const nonGhostZombies = zombies.filter(z => !z.isGhost);
-                const regularZombiesGone = gameState.zombiesLeft <= 0 && nonGhostZombies.length === 0;
+                const regularZombiesGone = gameState.zombiesRemaining <= 0 && nonGhostZombies.length === 0;
                 const bossDefeated = !gameState.bossActive || bosses.length === 0;
                 
                 if (regularZombiesGone && bossDefeated) {
@@ -1088,7 +1138,7 @@
                 }
                 
                 // Spawn regular zombies
-                if (gameState.zombiesLeft > 0 && zombies.length < 50 && Math.random() < 0.05) {
+                if (gameState.zombiesToSpawn > 0 && zombies.length < 50 && Math.random() < 0.05) {
                     spawnZombie();
                 }
                 
@@ -1272,6 +1322,7 @@
                     zombies.splice(i, 1);
                     if (!z.isGhost) {
                         gameState.zombiesKilled++;
+                        gameState.zombiesRemaining--;
                     }
                 }
             }
@@ -1575,7 +1626,7 @@
 
         function updateHUD() {
             document.getElementById('stage').textContent = gameState.stage;
-            document.getElementById('zombies-left').textContent = gameState.zombiesLeft;
+            document.getElementById('zombies-left').textContent = gameState.zombiesRemaining;
             document.getElementById('zombies-killed').textContent = gameState.zombiesKilled;
             document.getElementById('ammo-count').textContent = gameState.playerAmmo;
             document.getElementById('start-stage').textContent = gameState.stage;
@@ -1617,7 +1668,8 @@
                 gameState.playerLives++;
             }
             
-            gameState.zombiesLeft = CONFIG.ZOMBIES_PER_STAGE[gameState.stage - 1];
+            gameState.zombiesRemaining = CONFIG.ZOMBIES_PER_STAGE[gameState.stage - 1];
+            gameState.zombiesToSpawn = CONFIG.ZOMBIES_PER_STAGE[gameState.stage - 1];
             gameState.zombiesKilled = 0;
             zombies.length = 0;
             ammoPacks.length = 0;
@@ -1656,7 +1708,8 @@
             gameState = {
                 stage: 1,
                 zombiesKilled: 0,
-                zombiesLeft: CONFIG.ZOMBIES_PER_STAGE[0],
+                zombiesRemaining: CONFIG.ZOMBIES_PER_STAGE[0],
+                zombiesToSpawn: CONFIG.ZOMBIES_PER_STAGE[0],
                 playerLives: CONFIG.STARTING_LIVES,
                 playerAmmo: CONFIG.STARTING_AMMO,
                 totalAmmoCollected: 0,
@@ -1678,10 +1731,6 @@
             bulletTraces.length = 0;
             bloodSplatters.length = 0;
             bosses.length = 0;
-            
-            spawnInitialZombies();
-            spawnHiddenAmmo();
-            spawnBoss();
             
             document.getElementById('game-over-screen').classList.add('hidden');
             document.getElementById('stage-complete-screen').classList.add('hidden');
