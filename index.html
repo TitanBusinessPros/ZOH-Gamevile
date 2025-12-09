@@ -473,6 +473,12 @@
             <button id="quit-btn" class="btn" style="background: linear-gradient(to bottom, #666, #444); border-color: #888;">QUIT TO MENU</button>
         </div>
         
+        <div id="cutscene-screen" class="screen hidden" style="background: rgba(0, 0, 0, 1);">
+            <video id="cutscene-video" style="max-width: 90%; max-height: 90%; width: auto; height: auto;" playsinline>
+                <source src="https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Ad-1-Zombie.mp4" type="video/mp4">
+            </video>
+        </div>
+        
         <!-- Mobile Controls -->
         <div id="mobile-controls">
             <div id="joystick-area">
@@ -777,18 +783,21 @@
             document.getElementById('start-btn').addEventListener('click', () => {
                 clearSave();
                 
-                // Spawn zombies and ammo for new game
-                zombies.length = 0;
-                bosses.length = 0;
-                ammoPacks.length = 0;
-                spawnInitialZombies();
-                spawnHiddenAmmo();
-                spawnBoss();
-                updateHUD();
-                
-                document.getElementById('start-screen').classList.add('hidden');
-                gameState.gameRunning = true;
-                playStageMusic(gameState.stage);
+                // Play cutscene before stage 1
+                playCutscene(() => {
+                    // Spawn zombies and ammo for new game
+                    zombies.length = 0;
+                    bosses.length = 0;
+                    ammoPacks.length = 0;
+                    spawnInitialZombies();
+                    spawnHiddenAmmo();
+                    spawnBoss();
+                    updateHUD();
+                    
+                    document.getElementById('start-screen').classList.add('hidden');
+                    gameState.gameRunning = true;
+                    playStageMusic(gameState.stage);
+                });
             });
             
             document.getElementById('restart-btn').addEventListener('click', restartGame);
@@ -923,6 +932,27 @@
             saveGame();
         }
 
+        function playCutscene(callback) {
+            const cutsceneScreen = document.getElementById('cutscene-screen');
+            const cutsceneVideo = document.getElementById('cutscene-video');
+            
+            cutsceneScreen.classList.remove('hidden');
+            cutsceneVideo.currentTime = 0;
+            
+            // Play video
+            cutsceneVideo.play().catch(err => {
+                console.log("Video autoplay prevented, skipping cutscene");
+                cutsceneScreen.classList.add('hidden');
+                callback();
+            });
+            
+            // When video ends, hide cutscene and run callback
+            cutsceneVideo.onended = () => {
+                cutsceneScreen.classList.add('hidden');
+                callback();
+            };
+        }
+
         function initGame() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
@@ -948,15 +978,29 @@
                     zombies.length = 0;
                     bosses.length = 0;
                     ammoPacks.length = 0;
-                    spawnInitialZombies();
-                    spawnHiddenAmmo();
-                    spawnBoss();
-                    updateHUD();
-                    updateLivesDisplay();
                     
                     document.getElementById('start-screen').classList.add('hidden');
-                    gameState.gameRunning = true;
-                    playStageMusic(gameState.stage);
+                    
+                    // Play cutscene for stages 1, 2, and 3
+                    if (gameState.stage === 1 || gameState.stage === 2 || gameState.stage === 3) {
+                        playCutscene(() => {
+                            spawnInitialZombies();
+                            spawnHiddenAmmo();
+                            spawnBoss();
+                            updateHUD();
+                            updateLivesDisplay();
+                            gameState.gameRunning = true;
+                            playStageMusic(gameState.stage);
+                        });
+                    } else {
+                        spawnInitialZombies();
+                        spawnHiddenAmmo();
+                        spawnBoss();
+                        updateHUD();
+                        updateLivesDisplay();
+                        gameState.gameRunning = true;
+                        playStageMusic(gameState.stage);
+                    }
                 });
             }
             
@@ -1679,17 +1723,28 @@
             gameState.bossActive = false;
             gameState.bossPlayedSound = false;
             
-            spawnInitialZombies();
-            spawnHiddenAmmo();
-            spawnBoss();
-            
             document.getElementById('stage-complete-screen').classList.add('hidden');
             gameState.stageComplete = false;
-            gameState.gameRunning = true;
             updateLivesDisplay();
             
-            playStageMusic(gameState.stage);
-            saveGame();
+            // Play cutscene for stages 2 and 3
+            if (gameState.stage === 2 || gameState.stage === 3) {
+                playCutscene(() => {
+                    spawnInitialZombies();
+                    spawnHiddenAmmo();
+                    spawnBoss();
+                    gameState.gameRunning = true;
+                    playStageMusic(gameState.stage);
+                    saveGame();
+                });
+            } else {
+                spawnInitialZombies();
+                spawnHiddenAmmo();
+                spawnBoss();
+                gameState.gameRunning = true;
+                playStageMusic(gameState.stage);
+                saveGame();
+            }
         }
 
         function gameOver() {
