@@ -512,7 +512,15 @@
             MAX_ZOOM: 3,
             DEFAULT_ZOOM: 1,
             ZOOM_STEP: 0.25,
-            INVINCIBILITY_TIME: 1000
+            INVINCIBILITY_TIME: 1000,
+            // Portal System Configuration
+            PORTAL_HEALTH: 5000,
+            PORTAL_SPAWN_INTERVAL: 180000, // 3 minutes in milliseconds
+            PORTAL_SIZE: 100,
+            PORTAL_WARN_TIME: 5000, // 5 seconds warning before spawn
+            MAX_ACTIVE_CLONES: 5,
+            CLONE_DAMAGE_SCALE: 1.0,
+            CLONE_SPAWN_INVULN_TIME: 1000
         };
 
         // ============================================
@@ -520,44 +528,44 @@
         // Leave blank "" to use colored shapes
         // ============================================
         const SPRITES = {
-            player: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/tank-2.png",
-            zombie1: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Boss-3.png",
-            zombie2: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Zombie-11.png",
-            zombie3: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Zombie-7.png",
-            zombie4: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Zombie-10.png",
-            zombie5: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Zombie-12.png",
-            zombie6: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Boss-1.png",
-            zombie7: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Zombie-6.png",
+            player: "",
+            zombie1: "",
+            zombie2: "",
+            zombie3: "",
+            zombie4: "",
+            zombie5: "",
+            zombie6: "",
+            zombie7: "",
             zombie8: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Zombie-8.png",
             zombie9: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Zombie-9.png",
-            zombie10: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Zombie-10.png",
-            zombie11: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Zombie-7.png",
-            zombie12: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Zombie-3.png",
-            zombie13: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Zombie-5.png",
-            zombie14: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Boss-15.png",
+            zombie10: "",
+            zombie11: "",
+            zombie12: "",
+            zombie13: "",
+            zombie14: "",
             ammo: "",
-            boss1: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Boss-13.png",
-            boss2: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Boss-14.png",
-            boss3: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Boss-12.png",
-            boss4: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Boss-11.png",
-            boss5: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Boss-10.png",
-            boss6: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Boss-9.png",
-            boss7: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Boss-8.png",
-            boss8: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Boss-7.png",
-            boss9: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Boss-6.png",
-            boss10: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Boss-5.png",
-            boss11: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Boss-4.png",
-            boss12: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Boss-3.png",
-            groundTile1: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Tile-1.png",
-            groundTile2: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Tile-2.png",
-            groundTile3: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Tile-3.png",
-            groundTile4: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Tile-4.png",
-            groundTile5: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Tile-9.png",
-            groundTile6: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Tile-8.png",
-            groundTile7: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Tile-7.png",
-            groundTile8: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Tile-6.png",
-            groundTile9: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Tile-5.png",
-            groundTile10: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Tile-4.png"
+            boss1: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Boss-1.png",
+            boss2: "",
+            boss3: "",
+            boss4: "",
+            boss5: "",
+            boss6: "",
+            boss7: "",
+            boss8: "",
+            boss9: "",
+            boss10: "",
+            boss11: "",
+            boss12: "",
+            groundTile1: "",
+            groundTile2: "",
+            groundTile3: "",
+            groundTile4: "",
+            groundTile5: "",
+            groundTile6: "",
+            groundTile7: "",
+            groundTile8: "",
+            groundTile9: "",
+            groundTile10: ""
         };
 
         // ============================================
@@ -567,15 +575,15 @@
         // ============================================
         const STAGE_MUSIC = {
             stage1: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Stage-1-song.mp3",
-            stage2: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Stage-1-song.mp3",
-            stage3: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Stage-1-song.mp3",
-            stage4: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Stage-1-song.mp3",
-            stage5: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Stage-1-song.mp3",
-            stage6: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Stage-1-song.mp3",
-            stage7: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Stage-1-song.mp3",
-            stage8: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Stage-1-song.mp3",
-            stage9: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Stage-1-song.mp3",
-            stage10: "https://github.com/TitanBusinessPros/Zombie-Outbreak-Honolulu/raw/main/Stage-1-song.mp3"
+            stage2: "",
+            stage3: "",
+            stage4: "",
+            stage5: "",
+            stage6: "",
+            stage7: "",
+            stage8: "",
+            stage9: "",
+            stage10: ""
         };
 
         // Load images
@@ -602,8 +610,14 @@
             isInvincible: false,
             bossActive: false,
             bossPlayedSound: false,
-            isPaused: false
+            isPaused: false,
+            // Portal system state
+            portalActive: false,
+            portalDestroyed: false
         };
+
+        // Portal object - will be initialized per stage
+        let activePortal = null;
 
         const player = {
             x: CONFIG.CANVAS_WIDTH / 2,
@@ -614,6 +628,8 @@
         };
 
         const bosses = [];
+        const bossClones = []; // Clones spawned by portal
+        const portal = null; // Will be created when stage starts
         const zombies = [];
         const ammoPacks = [];
         const bloodSplatters = [];
@@ -788,10 +804,12 @@
                     // Spawn zombies and ammo for new game
                     zombies.length = 0;
                     bosses.length = 0;
+                    bossClones.length = 0;
                     ammoPacks.length = 0;
                     spawnInitialZombies();
                     spawnHiddenAmmo();
                     spawnBoss();
+                    createPortal(); // Create portal immediately
                     updateHUD();
                     
                     document.getElementById('start-screen').classList.add('hidden');
@@ -977,7 +995,9 @@
                     // Reset for current stage
                     zombies.length = 0;
                     bosses.length = 0;
+                    bossClones.length = 0;
                     ammoPacks.length = 0;
+                    activePortal = null;
                     
                     document.getElementById('start-screen').classList.add('hidden');
                     
@@ -987,6 +1007,7 @@
                             spawnInitialZombies();
                             spawnHiddenAmmo();
                             spawnBoss();
+                            createPortal(); // Create portal
                             updateHUD();
                             updateLivesDisplay();
                             gameState.gameRunning = true;
@@ -996,6 +1017,7 @@
                         spawnInitialZombies();
                         spawnHiddenAmmo();
                         spawnBoss();
+                        createPortal(); // Create portal
                         updateHUD();
                         updateLivesDisplay();
                         gameState.gameRunning = true;
@@ -1167,17 +1189,439 @@
             gameState.bossActive = true;
         }
 
+        // ============================================
+        // PORTAL CLONE SYSTEM
+        // ============================================
+
+        /**
+         * Portal Object Constructor
+         * Creates a boss-spawning portal with health, animations, and spawn timers
+         */
+        function createPortal() {
+            const pos = getValidPosition(CONFIG.PORTAL_SIZE);
+            
+            activePortal = {
+                x: pos.x,
+                y: pos.y,
+                size: CONFIG.PORTAL_SIZE,
+                health: CONFIG.PORTAL_HEALTH,
+                maxHealth: CONFIG.PORTAL_HEALTH,
+                lastSpawnTime: Date.now(),
+                nextSpawnTime: Date.now() + CONFIG.PORTAL_SPAWN_INTERVAL,
+                spawnInterval: CONFIG.PORTAL_SPAWN_INTERVAL,
+                warnTime: CONFIG.PORTAL_WARN_TIME,
+                isWarning: false,
+                pulsePhase: 0,
+                rotation: 0,
+                active: true
+            };
+            
+            gameState.portalActive = true;
+            gameState.portalDestroyed = false;
+            
+            console.log('[PORTAL] Portal created at', pos, 'Health:', CONFIG.PORTAL_HEALTH);
+        }
+
+        /**
+         * Update Portal State
+         * Handles spawn timing, visual effects, and clone generation
+         */
+        function updatePortal() {
+            if (!activePortal || !activePortal.active) return;
+            
+            const now = Date.now();
+            const timeUntilSpawn = activePortal.nextSpawnTime - now;
+            
+            // Update visual effects
+            activePortal.pulsePhase += 0.05;
+            activePortal.rotation += 0.02;
+            
+            // Check if entering warning phase
+            if (timeUntilSpawn <= activePortal.warnTime && !activePortal.isWarning) {
+                activePortal.isWarning = true;
+                console.log('[PORTAL] Warning: Spawn in 5 seconds');
+            }
+            
+            // Spawn boss clone when timer expires
+            if (timeUntilSpawn <= 0) {
+                spawnBossClone();
+                activePortal.lastSpawnTime = now;
+                activePortal.nextSpawnTime = now + activePortal.spawnInterval;
+                activePortal.isWarning = false;
+            }
+            
+            // Check if portal is destroyed
+            if (activePortal.health <= 0) {
+                destroyPortal();
+            }
+        }
+
+        /**
+         * Spawn Boss Clone from Portal
+         * Creates a copy of the stage boss(es) with all original properties
+         */
+        function spawnBossClone() {
+            // Check max clone limit
+            if (bossClones.length >= CONFIG.MAX_ACTIVE_CLONES) {
+                console.log('[PORTAL] Max clones reached, skipping spawn');
+                return;
+            }
+            
+            // Determine how many bosses to spawn based on stage
+            let cloneCount = 1;
+            let bossIds = [gameState.stage];
+            
+            if (gameState.stage >= 6 && gameState.stage <= 9) {
+                cloneCount = 2;
+                bossIds = [gameState.stage, gameState.stage];
+            } else if (gameState.stage === 10) {
+                cloneCount = 3;
+                bossIds = [10, 11, 12];
+            }
+            
+            // Spawn each clone
+            for (let i = 0; i < cloneCount; i++) {
+                const baseHealth = 2400;
+                const bossHealth = baseHealth * Math.pow(3, gameState.stage - 1);
+                
+                // Spawn near portal with offset
+                const angle = (Math.PI * 2 * i) / cloneCount;
+                const spawnDist = 100;
+                
+                const clone = {
+                    x: activePortal.x + Math.cos(angle) * spawnDist,
+                    y: activePortal.y + Math.sin(angle) * spawnDist,
+                    size: CONFIG.ZOMBIE_SIZE * 3,
+                    speed: 1.2,
+                    health: bossHealth * CONFIG.CLONE_DAMAGE_SCALE,
+                    maxHealth: bossHealth * CONFIG.CLONE_DAMAGE_SCALE,
+                    stage: gameState.stage,
+                    bossId: bossIds[i],
+                    soundPlayed: false,
+                    isClone: true,
+                    spawnTime: Date.now(),
+                    isInvulnerable: true // Spawn protection
+                };
+                
+                bossClones.push(clone);
+                
+                // Play spawn effects
+                playPortalSpawnSound();
+                createSpawnEffect(clone.x, clone.y);
+                
+                console.log('[PORTAL] Spawned clone', i + 1, 'of', cloneCount, 'Boss ID:', clone.bossId);
+            }
+        }
+
+        /**
+         * Update Boss Clones
+         * Same AI behavior as regular bosses
+         */
+        function updateBossClones() {
+            for (let i = bossClones.length - 1; i >= 0; i--) {
+                const clone = bossClones[i];
+                
+                // Remove spawn invulnerability after timer
+                if (clone.isInvulnerable && Date.now() - clone.spawnTime > CONFIG.CLONE_SPAWN_INVULN_TIME) {
+                    clone.isInvulnerable = false;
+                }
+                
+                // Move towards player (same as boss AI)
+                const dx = player.x - clone.x;
+                const dy = player.y - clone.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance > 0) {
+                    clone.x += (dx / distance) * clone.speed;
+                    clone.y += (dy / distance) * clone.speed;
+                }
+                
+                // Play sound when near player
+                if (distance < 200 && !clone.soundPlayed) {
+                    playBossSound();
+                    clone.soundPlayed = true;
+                }
+                
+                if (distance > 250) {
+                    clone.soundPlayed = false;
+                }
+                
+                // Check collision with player
+                if (!gameState.isInvincible && distance < player.size + clone.size) {
+                    takeDamage();
+                }
+                
+                // Check if clone is dead
+                if (clone.health <= 0) {
+                    bloodSplatters.push({x: clone.x, y: clone.y, size: 30 + Math.random() * 20, alpha: 1});
+                    ammoPacks.push({x: clone.x, y: clone.y, amount: 30});
+                    bossClones.splice(i, 1);
+                    console.log('[PORTAL] Clone destroyed, remaining:', bossClones.length);
+                }
+            }
+        }
+
+        /**
+         * Destroy Portal
+         * Called when portal health reaches zero
+         */
+        function destroyPortal() {
+            if (!activePortal) return;
+            
+            activePortal.active = false;
+            gameState.portalActive = false;
+            gameState.portalDestroyed = true;
+            
+            // Create destruction effect
+            for (let i = 0; i < 20; i++) {
+                bloodSplatters.push({
+                    x: activePortal.x + (Math.random() - 0.5) * 100,
+                    y: activePortal.y + (Math.random() - 0.5) * 100,
+                    size: 15 + Math.random() * 25,
+                    alpha: 1
+                });
+            }
+            
+            // Drop massive ammo reward
+            ammoPacks.push({x: activePortal.x, y: activePortal.y, amount: 50});
+            
+            console.log('[PORTAL] Portal destroyed!');
+        }
+
+        /**
+         * Draw Portal
+         * Animated pulsing portal with warning effects
+         */
+        function drawPortal() {
+            if (!activePortal || !activePortal.active) return;
+            
+            const now = Date.now();
+            const timeUntilSpawn = activePortal.nextSpawnTime - now;
+            const isWarning = timeUntilSpawn <= activePortal.warnTime;
+            
+            // Pulse effect
+            const pulse = Math.sin(activePortal.pulsePhase) * 0.2 + 1;
+            const size = activePortal.size * pulse;
+            
+            // Warning intensity
+            const warnIntensity = isWarning ? (1 - timeUntilSpawn / activePortal.warnTime) : 0;
+            
+            // Outer glow
+            ctx.save();
+            ctx.globalAlpha = 0.3 + warnIntensity * 0.4;
+            ctx.fillStyle = isWarning ? '#ff0000' : '#8800ff';
+            ctx.beginPath();
+            ctx.arc(activePortal.x, activePortal.y, size * 1.5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Middle ring
+            ctx.globalAlpha = 0.6 + warnIntensity * 0.3;
+            ctx.fillStyle = isWarning ? '#ff4400' : '#aa00ff';
+            ctx.beginPath();
+            ctx.arc(activePortal.x, activePortal.y, size * 1.2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Inner core
+            ctx.globalAlpha = 0.9;
+            ctx.fillStyle = isWarning ? '#ffaa00' : '#cc44ff';
+            ctx.beginPath();
+            ctx.arc(activePortal.x, activePortal.y, size, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Rotating energy swirl
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 3;
+            ctx.globalAlpha = 0.8;
+            for (let i = 0; i < 3; i++) {
+                ctx.beginPath();
+                ctx.arc(activePortal.x, activePortal.y, size * 0.7, 
+                    activePortal.rotation + (i * Math.PI * 2 / 3), 
+                    activePortal.rotation + (i * Math.PI * 2 / 3) + Math.PI / 2);
+                ctx.stroke();
+            }
+            
+            ctx.restore();
+            
+            // Health bar
+            const portalHp = Math.max(0, activePortal.health / activePortal.maxHealth);
+            ctx.fillStyle = '#000';
+            ctx.fillRect(activePortal.x - 80, activePortal.y - activePortal.size - 30, 160, 12);
+            ctx.fillStyle = '#f00';
+            ctx.fillRect(activePortal.x - 80, activePortal.y - activePortal.size - 30, 160, 12);
+            ctx.fillStyle = '#0f0';
+            ctx.fillRect(activePortal.x - 80, activePortal.y - activePortal.size - 30, 160 * portalHp, 12);
+            
+            // Portal label
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 18px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('PORTAL', activePortal.x, activePortal.y - activePortal.size - 40);
+            
+            // Warning timer
+            if (isWarning) {
+                ctx.fillStyle = '#ff0000';
+                ctx.font = 'bold 16px Arial';
+                ctx.fillText(`SPAWN: ${Math.ceil(timeUntilSpawn / 1000)}s`, activePortal.x, activePortal.y + activePortal.size + 30);
+            }
+        }
+
+        /**
+         * Draw Boss Clones
+         * Same rendering as regular bosses with "CLONE" label
+         */
+        function drawBossClones() {
+            for (const clone of bossClones) {
+                const bossImg = IMG['boss' + clone.bossId];
+                
+                // Flash effect during invulnerability
+                if (clone.isInvulnerable) {
+                    ctx.globalAlpha = 0.5 + Math.sin(Date.now() / 100) * 0.3;
+                } else {
+                    ctx.globalAlpha = 0.8;
+                }
+                
+                if (bossImg && bossImg.complete && bossImg.naturalWidth > 0 && SPRITES['boss' + clone.bossId]) {
+                    ctx.save();
+                    ctx.translate(clone.x, clone.y);
+                    ctx.drawImage(bossImg, -clone.size/2, -clone.size/2, clone.size, clone.size);
+                    ctx.restore();
+                } else {
+                    const colors = ['#8b0000', '#8b008b', '#ff4500', '#ff8c00', '#ff0000', '#dc143c', '#b22222', '#8b0000', '#a52a2a', '#800000', '#660000', '#4d0000'];
+                    ctx.fillStyle = colors[clone.bossId - 1] || '#8b0000';
+                    ctx.beginPath();
+                    ctx.arc(clone.x, clone.y, clone.size/2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                ctx.globalAlpha = 1;
+                
+                // Health bar
+                const cloneHp = Math.max(0, clone.health / clone.maxHealth);
+                ctx.fillStyle = '#000';
+                ctx.fillRect(clone.x - 60, clone.y - clone.size/2 - 20, 120, 10);
+                ctx.fillStyle = '#f00';
+                ctx.fillRect(clone.x - 60, clone.y - clone.size/2 - 20, 120, 10);
+                ctx.fillStyle = '#0f0';
+                ctx.fillRect(clone.x - 60, clone.y - clone.size/2 - 20, 120 * cloneHp, 10);
+                
+                // Clone label
+                ctx.fillStyle = clone.isInvulnerable ? '#ffff00' : '#ff00ff';
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('CLONE', clone.x, clone.y - clone.size/2 - 30);
+            }
+        }
+
+        /**
+         * Check bullet collision with portal
+         */
+        function checkPortalHit(bulletX, bulletY, bulletStartX, bulletStartY) {
+            if (!activePortal || !activePortal.active) return false;
+            
+            // Line-circle collision detection
+            const ldx = bulletX - bulletStartX;
+            const ldy = bulletY - bulletStartY;
+            const ll = Math.sqrt(ldx*ldx + ldy*ldy);
+            if (ll === 0) return false;
+            
+            const lux = ldx/ll, luy = ldy/ll;
+            const tcx = activePortal.x - bulletStartX;
+            const tcy = activePortal.y - bulletStartY;
+            const proj = tcx*lux + tcy*luy;
+            const clamp = Math.max(0, Math.min(ll, proj));
+            const cpx = bulletStartX + clamp*lux;
+            const cpy = bulletStartY + clamp*luy;
+            const dx = activePortal.x - cpx;
+            const dy = activePortal.y - cpy;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            
+            if (dist <= activePortal.size / 2) {
+                activePortal.health -= CONFIG.SHOTGUN_DAMAGE;
+                bloodSplatters.push({x: cpx, y: cpy, size: 8 + Math.random() * 12, alpha: 1});
+                console.log('[PORTAL] Hit! Health:', activePortal.health, '/', activePortal.maxHealth);
+                return true;
+            }
+            
+            return false;
+        }
+
+        /**
+         * Check bullet collision with boss clones
+         */
+        function checkCloneHits(bulletX, bulletY, bulletStartX, bulletStartY) {
+            for (const clone of bossClones) {
+                if (clone.isInvulnerable) continue; // Skip invulnerable clones
+                
+                const ldx = bulletX - bulletStartX;
+                const ldy = bulletY - bulletStartY;
+                const ll = Math.sqrt(ldx*ldx + ldy*ldy);
+                if (ll === 0) continue;
+                
+                const lux = ldx/ll, luy = ldy/ll;
+                const tcx = clone.x - bulletStartX;
+                const tcy = clone.y - bulletStartY;
+                const proj = tcx*lux + tcy*luy;
+                const clamp = Math.max(0, Math.min(ll, proj));
+                const cpx = bulletStartX + clamp*lux;
+                const cpy = bulletStartY + clamp*luy;
+                const dx = clone.x - cpx;
+                const dy = clone.y - cpy;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                
+                if (dist <= clone.size/2) {
+                    clone.health -= CONFIG.SHOTGUN_DAMAGE;
+                    bloodSplatters.push({x: cpx, y: cpy, size: 8 + Math.random() * 12, alpha: 1});
+                }
+            }
+        }
+
+        /**
+         * Play portal spawn sound effect
+         */
+        function playPortalSpawnSound() {
+            try {
+                const ac = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ac.createOscillator(), gain = ac.createGain();
+                osc.connect(gain);
+                gain.connect(ac.destination);
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(200, ac.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(800, ac.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.3, ac.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ac.currentTime + 0.3);
+                osc.start(ac.currentTime);
+                osc.stop(ac.currentTime + 0.3);
+            } catch(e) {}
+        }
+
+        /**
+         * Create visual spawn effect
+         */
+        function createSpawnEffect(x, y) {
+            for (let i = 0; i < 10; i++) {
+                bloodSplatters.push({
+                    x: x + (Math.random() - 0.5) * 50,
+                    y: y + (Math.random() - 0.5) * 50,
+                    size: 5 + Math.random() * 10,
+                    alpha: 0.8
+                });
+            }
+        }
+
         function gameLoop() {
             if (gameState.gameRunning && !gameState.gameOver && !gameState.stageComplete && !gameState.isPaused) {
                 update();
                 draw();
                 
-                // Check stage completion
+                // Check stage completion - NOW INCLUDES PORTAL
                 const nonGhostZombies = zombies.filter(z => !z.isGhost);
                 const regularZombiesGone = gameState.zombiesRemaining <= 0 && nonGhostZombies.length === 0;
                 const bossDefeated = !gameState.bossActive || bosses.length === 0;
+                const portalDefeated = gameState.portalDestroyed || !gameState.portalActive;
+                const allClonesDefeated = bossClones.length === 0;
                 
-                if (regularZombiesGone && bossDefeated) {
+                // Stage only completes when EVERYTHING is cleared
+                if (regularZombiesGone && bossDefeated && portalDefeated && allClonesDefeated) {
                     completeStage();
                 }
                 
@@ -1201,6 +1645,8 @@
             updatePlayer();
             updateZombies();
             updateBoss();
+            updatePortal(); // Update portal spawn timer
+            updateBossClones(); // Update all clones
             updateAmmo();
             updateBulletTraces();
             updateHUD();
@@ -1464,6 +1910,9 @@
                 if (s.alpha <= 0) bloodSplatters.splice(i, 1);
             }
             
+            // Draw Portal (behind everything)
+            drawPortal();
+            
             // Zombies
             for (const z of zombies) {
                 const zi = IMG['zombie' + z.type];
@@ -1530,6 +1979,9 @@
                     ctx.fillText('BOSS', boss.x, boss.y - boss.size/2 - 30);
                 }
             }
+            
+            // Draw Boss Clones
+            drawBossClones();
             
             // Player
             ctx.save();
@@ -1613,6 +2065,12 @@
                 const ex = player.x + Math.cos(angle) * CONFIG.SHOTGUN_RANGE;
                 const ey = player.y + Math.sin(angle) * CONFIG.SHOTGUN_RANGE;
                 bulletTraces.push({start: {x: player.x, y: player.y}, end: {x: ex, y: ey}, life: 1});
+                
+                // Check portal hit
+                checkPortalHit(ex, ey, player.x, player.y);
+                
+                // Check clone hits
+                checkCloneHits(ex, ey, player.x, player.y);
                 
                 // Check all bosses
                 if (gameState.bossActive) {
@@ -1720,8 +2178,12 @@
             bulletTraces.length = 0;
             bloodSplatters.length = 0;
             bosses.length = 0;
+            bossClones.length = 0;
+            activePortal = null;
             gameState.bossActive = false;
             gameState.bossPlayedSound = false;
+            gameState.portalActive = false;
+            gameState.portalDestroyed = false;
             
             document.getElementById('stage-complete-screen').classList.add('hidden');
             gameState.stageComplete = false;
@@ -1733,6 +2195,7 @@
                     spawnInitialZombies();
                     spawnHiddenAmmo();
                     spawnBoss();
+                    createPortal(); // Create portal for new stage
                     gameState.gameRunning = true;
                     playStageMusic(gameState.stage);
                     saveGame();
@@ -1741,6 +2204,7 @@
                 spawnInitialZombies();
                 spawnHiddenAmmo();
                 spawnBoss();
+                createPortal(); // Create portal for new stage
                 gameState.gameRunning = true;
                 playStageMusic(gameState.stage);
                 saveGame();
@@ -1777,7 +2241,9 @@
                 isInvincible: false,
                 bossActive: false,
                 bossPlayedSound: false,
-                isPaused: false
+                isPaused: false,
+                portalActive: false,
+                portalDestroyed: false
             };
             player.x = CONFIG.CANVAS_WIDTH / 2;
             player.y = CONFIG.CANVAS_HEIGHT / 2;
@@ -1786,6 +2252,8 @@
             bulletTraces.length = 0;
             bloodSplatters.length = 0;
             bosses.length = 0;
+            bossClones.length = 0;
+            activePortal = null;
             
             document.getElementById('game-over-screen').classList.add('hidden');
             document.getElementById('stage-complete-screen').classList.add('hidden');
